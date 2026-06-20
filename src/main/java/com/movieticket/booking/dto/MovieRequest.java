@@ -1,0 +1,19 @@
+package com.movieticket.booking.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class MovieRequest {
+
+    private String title;
+    private String genre;
+    private int durationMins;
+    private String language;
+
+}
