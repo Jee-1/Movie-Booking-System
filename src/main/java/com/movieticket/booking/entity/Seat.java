@@ -24,6 +24,7 @@ public class Seat {
 
     private String seatNumber;
 
+    @Enumerated(EnumType.STRING)
     private SeatType seatType;
 
 
