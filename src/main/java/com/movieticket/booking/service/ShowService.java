@@ -7,6 +7,7 @@ import com.movieticket.booking.entity.Seat;
 import com.movieticket.booking.entity.SeatBooking;
 import com.movieticket.booking.entity.SeatStatus;
 import com.movieticket.booking.entity.Show;
+import com.movieticket.booking.exception.ResourceNotFoundException;
 import com.movieticket.booking.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +37,9 @@ public class ShowService {
     @Transactional
     public Show create(ShowRequest req) {
         Movie movie = movieRepository.findById(req.getMovieId())
-                .orElseThrow(() -> new RuntimeException("Movie not found: " + req.getMovieId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found: " + req.getMovieId()));
         Screen screen = screenRepository.findById(req.getScreenId())
-                .orElseThrow(() -> new RuntimeException("Screen not found: " + req.getScreenId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Screen not found: " + req.getScreenId()));
         Show show = new Show();
         show.setMovie(movie);
         show.setScreen(screen);
@@ -66,16 +67,16 @@ public class ShowService {
 
     public Show getById(Long id) {
         return showRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Show not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Show not found: " + id));
     }
 
     @Transactional
     public Show update(Long id, ShowRequest req) {
         Show show = getById(id);
         Movie movie = movieRepository.findById(req.getMovieId())
-                .orElseThrow(() -> new RuntimeException("Movie not found: " + req.getMovieId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found: " + req.getMovieId()));
         Screen screen = screenRepository.findById(req.getScreenId())
-                .orElseThrow(() -> new RuntimeException("Screen not found: " + req.getScreenId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Screen not found: " + req.getScreenId()));
 
         show.setMovie(movie);
         show.setScreen(screen);

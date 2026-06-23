@@ -3,6 +3,7 @@ package com.movieticket.booking.service;
 import com.movieticket.booking.dto.ScreenRequest;
 import com.movieticket.booking.entity.Screen;
 import com.movieticket.booking.entity.Theater;
+import com.movieticket.booking.exception.ResourceNotFoundException;
 import com.movieticket.booking.repository.ScreenRepository;
 import com.movieticket.booking.repository.TheaterRepository;
 import org.apache.catalina.LifecycleState;
@@ -22,7 +23,7 @@ public class ScreenService {
 
     public Screen create(ScreenRequest req){
         Theater theater = theaterRepository.findById(req.getTheaterId())
-                .orElseThrow(()->new RuntimeException());
+                .orElseThrow(()->new ResourceNotFoundException("Theater not found "+req.getTheaterId()));
         Screen screen = new Screen();
         screen.setTheater(theater);
         screen.setScreenName(req.getScreenName());
@@ -36,7 +37,7 @@ public class ScreenService {
 
     public Screen getById(Long id){
         return screenRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException());
+                .orElseThrow(() -> new ResourceNotFoundException("Screen not found "+id));
     }
 
     public void delete(Long id){
@@ -46,7 +47,7 @@ public class ScreenService {
     public Screen update(Long id, ScreenRequest req){
         Screen screen = getById(id);
         Theater theater = theaterRepository.findById(req.getTheaterId())
-                .orElseThrow(()->new RuntimeException());
+                .orElseThrow(()->new ResourceNotFoundException("Theater not found "+id));
         screen.setTheater(theater);
         screen.setScreenName(req.getScreenName());
         screen.setTotalSeats(req.getTotalSeats());

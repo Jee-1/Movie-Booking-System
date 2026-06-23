@@ -2,6 +2,7 @@ package com.movieticket.booking.service;
 
 import com.movieticket.booking.dto.TheaterRequest;
 import com.movieticket.booking.entity.Theater;
+import com.movieticket.booking.exception.ResourceNotFoundException;
 import com.movieticket.booking.repository.TheaterRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,7 @@ public class TheaterService {
 
     public Theater getById(Long id){
         return theaterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Theater not found! "+id));
+                .orElseThrow(() -> new ResourceNotFoundException("Theater not found! "+id));
     }
 
     public Theater update(Long id, TheaterRequest req) {

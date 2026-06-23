@@ -5,6 +5,7 @@ import com.movieticket.booking.dto.SeatRequest;
 import com.movieticket.booking.entity.Screen;
 import com.movieticket.booking.entity.Seat;
 import com.movieticket.booking.entity.Theater;
+import com.movieticket.booking.exception.ResourceNotFoundException;
 import com.movieticket.booking.repository.ScreenRepository;
 import com.movieticket.booking.repository.SeatRepository;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ public class SeatService {
 
     public Seat create(SeatRequest req){
         Screen screen = screenRepository.findById(req.getScreenId())
-                .orElseThrow(()->new RuntimeException());
+                .orElseThrow(()->new ResourceNotFoundException("Screen not found"));
         Seat seat = new Seat();
         seat.setSeatNumber(req.getSeatNumber());
         seat.setSeatType(req.getSeatType());
@@ -36,7 +37,7 @@ public class SeatService {
 
     public Seat getById(Long id){
         return seatRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException());
+                .orElseThrow(() -> new ResourceNotFoundException("Seat not found"));
     }
 
     public void delete(Long id){
@@ -46,7 +47,7 @@ public class SeatService {
     public Seat update(Long id, SeatRequest req){
         Seat seat = getById(id);
         Screen screen = screenRepository.findById(req.getScreenId())
-                .orElseThrow(()->new RuntimeException());
+                .orElseThrow(()->new ResourceNotFoundException("Screen not found"));
         seat.setSeatNumber(req.getSeatNumber());
         seat.setSeatType(req.getSeatType());
         seat.setScreen(screen);
