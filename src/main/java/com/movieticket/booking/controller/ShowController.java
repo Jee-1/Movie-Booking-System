@@ -1,5 +1,6 @@
 package com.movieticket.booking.controller;
 
+import com.movieticket.booking.dto.SeatMapItem;
 import com.movieticket.booking.dto.ShowRequest;
 import com.movieticket.booking.entity.Show;
 import com.movieticket.booking.service.ShowService;
@@ -22,10 +23,6 @@ public class ShowController {
         return showService.create(req);
     }
 
-    @GetMapping
-    public List<Show> getAll() {
-        return showService.getAll();
-    }
 
     @GetMapping("/{id}")
     public Show getById(@PathVariable Long id) {
@@ -40,5 +37,16 @@ public class ShowController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         showService.delete(id);
+    }
+
+    @GetMapping
+    public List<Show> getShows(@RequestParam(required = false) Long movieId){
+        if(movieId != null) return showService.getByMovie(movieId);
+        return showService.getAll();
+    }
+
+    @GetMapping("/{showId}/seats")
+    public List<SeatMapItem> getSeatMap(@PathVariable Long showId){
+        return showService.getSeatMap(showId);
     }
 }

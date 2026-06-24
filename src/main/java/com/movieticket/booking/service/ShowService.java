@@ -1,5 +1,6 @@
 package com.movieticket.booking.service;
 
+import com.movieticket.booking.dto.SeatMapItem;
 import com.movieticket.booking.dto.ShowRequest;
 import com.movieticket.booking.entity.Movie;
 import com.movieticket.booking.entity.Screen;
@@ -87,5 +88,21 @@ public class ShowService {
 
     public void delete(Long id) {
         showRepository.deleteById(id);
+    }
+
+    public List<Show> getByMovie(Long movieId){
+        return showRepository.findByMovieId(movieId);
+    }
+
+    public List<SeatMapItem> getSeatMap(Long showId){
+        getById(showId);
+        return seatBookingRepository.findByShowId(showId).stream().
+                map(sb -> new SeatMapItem(
+                    sb.getId(),
+                    sb.getSeat().getSeatNumber(),
+                    sb.getSeat().getSeatType(),
+                    sb.getStatus()
+                ))
+                .toList();
     }
 }
