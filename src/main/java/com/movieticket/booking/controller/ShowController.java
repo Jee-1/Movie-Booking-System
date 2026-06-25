@@ -4,6 +4,7 @@ import com.movieticket.booking.dto.SeatMapItem;
 import com.movieticket.booking.dto.ShowRequest;
 import com.movieticket.booking.entity.Show;
 import com.movieticket.booking.service.ShowService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class ShowController {
         this.showService = showService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Show create(@RequestBody ShowRequest req) {
         return showService.create(req);
@@ -29,11 +31,13 @@ public class ShowController {
         return showService.getById(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public Show update(@PathVariable Long id, @RequestBody ShowRequest req) {
         return showService.update(id, req);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         showService.delete(id);

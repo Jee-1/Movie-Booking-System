@@ -4,6 +4,7 @@ import com.movieticket.booking.dto.MovieRequest;
 import com.movieticket.booking.entity.Movie;
 import com.movieticket.booking.service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class MovieController {
     @Autowired
     private MovieService movieService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Movie create(@RequestBody MovieRequest movie){
         return movieService.create(movie);
@@ -30,11 +32,13 @@ public class MovieController {
         return movieService.getById(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public Movie update(@PathVariable Long id, @RequestBody MovieRequest movie){
         return movieService.update(id, movie);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id){
         movieService.delete(id);
