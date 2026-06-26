@@ -163,6 +163,8 @@ When a Show is created, the app auto-creates one AVAILABLE SeatBooking per seat.
 - [x] Phase 6: Global exception handling (clean 404s)
 - [x] Phase 7: Public browse APIs (shows by movie, seat map for a show)
 - [x] Phase 8: Spring Security + JWT (register, login, filter, role-based @PreAuthorize)
-- [ ] Phase 9: Seat locking + booking  <-- NEXT (the centerpiece)
+- [x] Phase 9: Seat locking + booking (pessimistic lock, lock->confirm->BOOKED, TTL cleanup job)
+- [x] Phase 10: Payment (idempotency), response DTOs, validation (@Valid), pagination, unit test
+      remaining: Swagger (held - Spring Boot 4.1 / springdoc compatibility)
 - [ ] Phase 9: Seat locking + booking  <-- the centerpiece
 - [ ] Phase 10: Payment + polish (validation, pagination, tests)

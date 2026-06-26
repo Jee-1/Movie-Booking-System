@@ -4,6 +4,8 @@ import com.movieticket.booking.dto.MovieRequest;
 import com.movieticket.booking.entity.Movie;
 import com.movieticket.booking.exception.ResourceNotFoundException;
 import com.movieticket.booking.repository.MovieRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +30,10 @@ public class MovieService {
 
     public List<Movie> getAll(){
         return movieRepository.findAll();
+    }
+
+    public Page<Movie> getAll(Pageable pageable){
+        return movieRepository.findAll(pageable);
     }
 
     public Movie getById(Long id){

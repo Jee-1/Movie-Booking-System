@@ -3,11 +3,12 @@ package com.movieticket.booking.controller;
 import com.movieticket.booking.dto.MovieRequest;
 import com.movieticket.booking.entity.Movie;
 import com.movieticket.booking.service.MovieService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -18,13 +19,13 @@ public class MovieController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public Movie create(@RequestBody MovieRequest movie){
+    public Movie create(@Valid @RequestBody MovieRequest movie){
         return movieService.create(movie);
     }
 
     @GetMapping
-    public List<Movie> getAll(){
-        return movieService.getAll();
+    public Page<Movie> getAll(Pageable pageable){
+        return movieService.getAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -34,7 +35,7 @@ public class MovieController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public Movie update(@PathVariable Long id, @RequestBody MovieRequest movie){
+    public Movie update(@PathVariable Long id, @Valid @RequestBody MovieRequest movie){
         return movieService.update(id, movie);
     }
 

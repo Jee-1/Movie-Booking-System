@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Booking</title>
+<style>
+  body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 16px; color: #222; }
+  h1 { color: #c0392b; }
+  section { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
+  h2 { margin-top: 0; font-size: 1.1rem; }
+  input, button, select { padding: 8px; margin: 4px 4px 4px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+  button { background: #c0392b; color: #fff; border: none; cursor: pointer; }
+  button:hover { background: #a93226; }
+  button.secondary { background: #34495e; }
+  button:disabled { background: #bbb; cursor: not-allowed; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+  .ok { background: #e8f7ef; color: #1e8449; }
+  .muted { color: #777; font-size: 13px; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+  li:hover { background: #fafafa; }
+  /* seat grid */
+  .seatgrid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .seat { width: 56px; height: 44px; border-radius: 6px; border: 1px solid #aaa; cursor: pointer;
+          font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .AVAILABLE { background: #e8f7ef; border-color: #2e9e6b; }
+  .selected  { background: #5b6ee1; color: #fff; border-color: #3b4ec1; }
+  .LOCKED    { background: #fdf1e3; color: #a05a00; border-color: #d98324; cursor: not-allowed; }
+  .BOOKED    { background: #eee; color: #999; border-color: #ccc; cursor: not-allowed; text-decoration: line-through; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; max-height: 220px; }
+</style>
+</head>
+<body>
+  <h1>🎬 Movie Booking</h1>
+
+  <!-- 1. AUTH -->
+  <section>
+    <h2>1. Login <span id="who" class="muted"></span></h2>
+    <input id="email" placeholder="email" value="admin@movies.com">
+    <input id="password" type="password" placeholder="password" value="admin123">
+    <button onclick="login()">Login</button>
+    <button class="secondary" onclick="logout()">Logout</button>
+  </section>
+
+  <!-- 2. SHOWS -->
+  <section>
+    <h2>2. Pick a Show</h2>
+    <button onclick="loadShows()">Load Shows</button>
+    <ul id="shows"></ul>
+  </section>
+
+  <!-- 3. SEAT MAP -->
+  <section>
+    <h2>3. Seat Map <span id="showLabel" class="muted"></span></h2>
+    <div id="seatgrid" class="seatgrid"></div>
+    <div style="margin-top:12px;">
+      <button onclick="lockSeats()">Lock selected</button>
+      <button onclick="confirmBooking()">Confirm</button>
+      <button onclick="pay()">Pay</button>
+    </div>
+    <p class="muted">Click green seats to select, then Lock → Confirm → Pay.</p>
+  </section>
+
+  <!-- OUTPUT -->
+  <section>
+    <h2>API Response</h2>
+    <pre id="out">—</pre>
+  </section>
+
+<script>
+const API = "http://localhost:8080";
+let selectedShowId = null;
+let selectedSeatIds = [];
+let lastBookingId = null;
+
+function token() { return localStorage.getItem("token"); }
+function out(obj) { document.getElementById("out").textContent =
+    typeof obj === "string" ? obj : JSON.stringify(obj, null, 2); }
+
+// generic API call — attaches the JWT if we have one
+async function api(path, method = "GET", body = null) {
+  const headers = { "Content-Type": "application/json" };
+  if (token()) headers["Authorization"] = "Bearer " + token();
+  const res = await fetch(API + path, {
+    method, headers, body: body ? JSON.stringify(body) : null
+  });
+  const text = await res.text();
+  let data; try { data = JSON.parse(text); } catch { data = text; }
+  if (!res.ok) { out(data); throw new Error("HTTP " + res.status); }
+  return data;
+}
+
+async function login() {
+  try {
+    const data = await api("/api/auth/login", "POST", {
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    });
+    localStorage.setItem("token", data.token);
+    document.getElementById("who").innerHTML =
+      `<span class="pill ok">logged in: ${data.email} (${data.role})</span>`;
+    out(data);
+  } catch (e) { /* error already shown */ }
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  document.getElementById("who").textContent = "";
+  out("logged out");
+}
+
+async function loadShows() {
+  const shows = await api("/api/shows");
+  const ul = document.getElementById("shows");
+  ul.innerHTML = "";
+  shows.forEach(s => {
+    const li = document.createElement("li");
+    const title = s.movie ? s.movie.title : ("show " + s.id);
+    const screen = s.screen ? s.screen.screenName : "";
+    li.textContent = `#${s.id} — ${title} @ ${screen} — ${s.showTime} — ₹${s.basePrice}`;
+    li.onclick = () => loadSeatMap(s.id, title);
+    ul.appendChild(li);
+  });
+  out(shows);
+}
+
+async function loadSeatMap(showId, title) {
+  selectedShowId = showId;
+  selectedSeatIds = [];
+  document.getElementById("showLabel").textContent = "— " + (title || ("show " + showId));
+  const seats = await api(`/api/shows/${showId}/seats`);
+  const grid = document.getElementById("seatgrid");
+  grid.innerHTML = "";
+  seats.forEach(seat => {
+    const div = document.createElement("div");
+    div.className = "seat " + seat.status;
+    div.textContent = seat.seatNumber;
+    if (seat.status === "AVAILABLE") {
+      div.onclick = () => toggleSeat(div, seat.seatBookingId);
+    }
+    grid.appendChild(div);
+  });
+  out(seats);
+}
+
+function toggleSeat(div, seatBookingId) {
+  const i = selectedSeatIds.indexOf(seatBookingId);
+  if (i === -1) { selectedSeatIds.push(seatBookingId); div.classList.add("selected"); }
+  else { selectedSeatIds.splice(i, 1); div.classList.remove("selected"); }
+}
+
+async function lockSeats() {
+  if (!selectedSeatIds.length) return out("Select at least one green seat first.");
+  // NOTE: the lock DTO field is "seatBooking"
+  const res = await api("/api/bookings/lock", "POST",
+    { showId: selectedShowId, seatBooking: selectedSeatIds });
+  out(res);
+  loadSeatMap(selectedShowId);   // refresh to show LOCKED
+}
+
+async function confirmBooking() {
+  if (!selectedSeatIds.length) return out("Lock seats first, then confirm.");
+  // NOTE: the confirm DTO field is "seatBookingIds"
+  const res = await api("/api/bookings/confirm", "POST",
+    { showId: selectedShowId, seatBookingIds: selectedSeatIds });
+  lastBookingId = res.bookingId;
+  out(res);
+}
+
+async function pay() {
+  if (!lastBookingId) return out("Confirm a booking first.");
+  const txnRef = "txn_" + Date.now();   // a fake unique gateway reference
+  const res = await api("/api/payments", "POST",
+    { bookingId: lastBookingId, transactionRef: txnRef });
+  out(res);
+  loadSeatMap(selectedShowId);   // refresh to show BOOKED
+}
+</script>
+</body>
+</html>

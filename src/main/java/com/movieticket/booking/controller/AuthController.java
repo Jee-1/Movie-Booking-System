@@ -5,7 +5,7 @@ import com.movieticket.booking.dto.LoginRequest;
 import com.movieticket.booking.dto.RegisterRequest;
 import com.movieticket.booking.entity.User;
 import com.movieticket.booking.service.AuthService;
-import lombok.extern.java.Log;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,12 +20,12 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public User register(@RequestBody RegisterRequest req){
+    public User register(@Valid @RequestBody RegisterRequest req){
         return authService.register(req);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest req){
+    public AuthResponse login(@Valid @RequestBody LoginRequest req){
         return authService.login(req);
     }
 
